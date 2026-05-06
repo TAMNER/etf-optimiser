@@ -15,8 +15,18 @@ RISK_FREE_RATE = 0.0
 
 
 def prepare_log_returns(prices_long):
-    """Convert long close prices into a clean log-return matrix."""
-    prices_wide = prices_long.pivot(index="date", columns="ticker", values="close").sort_index()
+    """Convert long close prices into a clean log-return matrix.
+
+    Duplicate date/ticker rows can occur when an ETF appears more than once in
+    the input universe or Yahoo returns overlapping records. Average duplicate
+    closes so the reshape step remains deterministic instead of raising.
+    """
+    prices_wide = prices_long.pivot_table(
+        index="date",
+        columns="ticker",
+        values="close",
+        aggfunc="mean",
+    ).sort_index()
     prices_wide = prices_wide.dropna(axis=1, thresh=int(len(prices_wide) * 0.8))
     prices_wide = prices_wide.ffill().dropna()
     log_returns = np.log(prices_wide / prices_wide.shift(1)).dropna()

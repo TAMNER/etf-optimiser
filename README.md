@@ -16,6 +16,18 @@ Open `etf_portfolio_optimiser_colab.ipynb` in Google Colab and run the cells fro
 /content/drive/MyDrive/etf-optimiser
 ```
 
+### Colab timeout notes
+
+The InvestEngine scrape is intentionally conservative so Colab does not appear to hang while fetching hundreds of ETF detail pages. The notebook now:
+
+- scrapes the ETF range page and sitemap first;
+- skips per-ETF detail-page requests by default and falls back to the ticker as the ETF name when a name is not available from the listing;
+- prints scraper, Yahoo symbol-resolution, and price-download progress with per-request timeouts.
+
+If you want the scraper to try detail pages for fuller ETF names, set `SCRAPE_DETAIL_PAGES = True` in the notebook. Keep `SCRAPE_MAX_DETAIL_PAGES` low at first, then increase it only if Colab remains responsive.
+
+If stage 9 previously failed with `ValueError: Index contains duplicate entries, cannot reshape`, update to the latest notebook and rerun stage 9. As long as stage 8 has already saved `prices_long.csv`, stage 9 can reload that file from Drive, normalise duplicate ETF tickers, and average duplicate `date,ticker` close prices before creating the wide returns matrix.
+
 ## Continuous local testing
 
 Colab-specific cells such as Google Drive mounting cannot run in this container, and live InvestEngine/Yahoo calls can be flaky or slow. To continuously test and improve the project locally, the math-heavy optimiser logic is mirrored in `etf_optimiser_core.py` and covered with synthetic-data tests.
