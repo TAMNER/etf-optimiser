@@ -105,8 +105,16 @@ def optimise_best_sharpe(
     target_return_steps=50,
     trading_days=TRADING_DAYS,
     risk_free_rate=RISK_FREE_RATE,
+    maxiter=300,
+    ftol=1e-9,
 ):
-    """Find the best-Sharpe long-only portfolio over a target-return grid."""
+    """Find a best-Sharpe long-only portfolio with one direct SLSQP solve.
+
+    ``target_return_steps`` is kept for backward compatibility with older
+    notebook/test calls, but the optimiser no longer runs a slow efficient
+    frontier grid.
+    """
+    _ = target_return_steps
     names = names or {}
     tickers = list(returns.columns)
     n_assets = len(tickers)
@@ -116,36 +124,32 @@ def optimise_best_sharpe(
     annual_returns = (returns.mean() * trading_days).values
     bounds = [(0, max_weight)] * n_assets
     initial_weights = np.ones(n_assets) / n_assets
-    target_returns = np.linspace(annual_returns.min(), annual_returns.max(), target_return_steps)
-    best = None
+    constraints = [{"type": "eq", "fun": lambda w: w.sum() - 1}]
 
-    for target_return in target_returns:
-        constraints = [
-            {"type": "eq", "fun": lambda w: w.sum() - 1},
-            {"type": "eq", "fun": lambda w, target=target_return: w @ annual_returns - target},
-        ]
-        result = minimize(
-            lambda w: w @ cov @ w,
-            initial_weights,
-            method="SLSQP",
-            bounds=bounds,
-            constraints=constraints,
-            options={"maxiter": 1000, "ftol": 1e-12},
-        )
-        if not result.success:
-            continue
+    def negative_sharpe(weights):
+        _, volatility, sharpe = portfolio_stats(weights, annual_returns, cov, risk_free_rate)
+        if not np.isfinite(sharpe) or volatility <= 0:
+            return 1e6
+        return -sharpe
 
-        ret, vol, sharpe = portfolio_stats(result.x, annual_returns, cov, risk_free_rate)
-        if best is None or sharpe > best["sharpe_ratio"]:
-            best = {
-                "weights": result.x,
-                "annual_return": ret,
-                "volatility": vol,
-                "sharpe_ratio": sharpe,
-            }
+    result = minimize(
+        negative_sharpe,
+        initial_weights,
+        method="SLSQP",
+        bounds=bounds,
+        constraints=constraints,
+        options={"maxiter": maxiter, "ftol": ftol, "disp": False},
+    )
+    if not result.success:
+        raise ValueError(f"No feasible portfolio found: {result.message}")
 
-    if best is None:
-        raise ValueError("No feasible portfolio found.")
+    ret, vol, sharpe = portfolio_stats(result.x, annual_returns, cov, risk_free_rate)
+    best = {
+        "weights": result.x,
+        "annual_return": ret,
+        "volatility": vol,
+        "sharpe_ratio": sharpe,
+    }
 
     weights = pd.DataFrame({
         "ticker": tickers,
