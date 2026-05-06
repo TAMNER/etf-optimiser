@@ -16,6 +16,16 @@ Open `etf_portfolio_optimiser_colab.ipynb` in Google Colab and run the cells fro
 /content/drive/MyDrive/etf-optimiser
 ```
 
+### Colab timeout notes
+
+The InvestEngine scrape is intentionally conservative so Colab does not appear to hang while fetching hundreds of ETF detail pages. The notebook now:
+
+- scrapes the ETF range page and sitemap first;
+- skips per-ETF detail-page requests by default and falls back to the ticker as the ETF name when a name is not available from the listing;
+- prints scraper, Yahoo symbol-resolution, and price-download progress with per-request timeouts.
+
+If you want the scraper to try detail pages for fuller ETF names, set `SCRAPE_DETAIL_PAGES = True` in the notebook. Keep `SCRAPE_MAX_DETAIL_PAGES` low at first, then increase it only if Colab remains responsive.
+
 ## Continuous local testing
 
 Colab-specific cells such as Google Drive mounting cannot run in this container, and live InvestEngine/Yahoo calls can be flaky or slow. To continuously test and improve the project locally, the math-heavy optimiser logic is mirrored in `etf_optimiser_core.py` and covered with synthetic-data tests.
