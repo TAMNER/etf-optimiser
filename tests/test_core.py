@@ -37,6 +37,18 @@ def test_prepare_log_returns_from_long_prices():
     assert np.isfinite(returns.to_numpy()).all()
 
 
+def test_prepare_log_returns_aggregates_duplicate_date_ticker_prices():
+    prices = synthetic_prices_long(days=20, tickers=2)
+    duplicate = prices.iloc[[0]].copy()
+    duplicate["close"] = duplicate["close"] * 1.02
+    prices = pd.concat([prices, duplicate], ignore_index=True)
+
+    returns = prepare_log_returns(prices)
+
+    assert returns.shape == (19, 2)
+    assert np.isfinite(returns.to_numpy()).all()
+
+
 def test_risk_metrics_have_expected_columns_and_values():
     returns = prepare_log_returns(synthetic_prices_long())
     metrics = compute_risk_metrics(returns, names={"ETF1": "ETF 1"}, window_name="full_5y")
