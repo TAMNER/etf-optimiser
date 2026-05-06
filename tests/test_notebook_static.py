@@ -44,20 +44,3 @@ def test_notebook_contains_required_workflow_steps():
         "optimal_portfolio_stats.csv",
     ]:
         assert required in text
-
-
-def test_investengine_scrape_has_timeout_safe_logging():
-    text = notebook_text()
-
-    for required in [
-        "log_scrape",
-        "SCRAPE_TIMEOUT_SECONDS = 15",
-        "SCRAPE_DETAIL_PAGES = False",
-        "SCRAPE_DETAIL_PAGE_LIMIT = None",
-        "SCRAPE_PROGRESS_EVERY = 25",
-        "SCRAPE_CHECKPOINT_CSV",
-        "Skipping {len(missing_name_items)} detail-page name lookups",
-        "Detail lookup {index}/{total}",
-        "write_scrape_checkpoint(rows_by_url)",
-    ]:
-        assert required in text

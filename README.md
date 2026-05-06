@@ -16,13 +16,6 @@ Open `etf_portfolio_optimiser_colab.ipynb` in Google Colab and run the cells fro
 /content/drive/MyDrive/etf-optimiser
 ```
 
-
-### InvestEngine scrape logging
-
-The InvestEngine scrape cell prints timestamped progress logs so you can see whether Colab is waiting on the sitemap, detail-page requests, or CSV writing. By default, `SCRAPE_DETAIL_PAGES = False` to avoid making hundreds of individual ETF detail-page requests during a normal run; tickers are used as fallback names for rows whose names are not visible on the all-ETFs page.
-
-If you need to debug missing ETF names, set `SCRAPE_DETAIL_PAGES = True` in the notebook settings for that scrape cell. You can also set `SCRAPE_DETAIL_PAGE_LIMIT = 50` for a smaller diagnostic run before attempting the full universe. The scrape cell writes `investengine_etfs_scrape_checkpoint.csv` periodically when detail-page lookup is enabled.
-
 ## Continuous local testing
 
 Colab-specific cells such as Google Drive mounting cannot run in this container, and live InvestEngine/Yahoo calls can be flaky or slow. To continuously test and improve the project locally, the math-heavy optimiser logic is mirrored in `etf_optimiser_core.py` and covered with synthetic-data tests.
