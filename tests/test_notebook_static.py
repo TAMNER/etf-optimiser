@@ -32,7 +32,7 @@ def test_notebook_contains_required_workflow_steps():
         "scrape_investengine_etfs",
         "SCRAPE_DETAIL_PAGES = False",
         "SCRAPE_REQUEST_TIMEOUT = 10",
-        "YAHOO_SUFFIXES = ['', '.L', '.DE', '.MI', '.AS', '.PA', '.SW', '.IR', '.TO', '.AX']",
+        "YAHOO_SUFFIXES = ['.L', '', '.DE', '.MI', '.AS', '.PA', '.SW', '.IR', '.TO', '.AX']",
         "symbol_cache.json",
         "YFINANCE_REQUEST_TIMEOUT = 15",
         "timeout=YFINANCE_REQUEST_TIMEOUT",
